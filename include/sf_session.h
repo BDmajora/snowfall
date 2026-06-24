@@ -3,7 +3,7 @@
  *
  * Scans /usr/share/wayland-sessions/ for .desktop files, parses their
  * Name= and Exec= fields, and provides a list the UI can display. If no
- * session files exist, a built-in CrystallineLattice (glacier-phase0)
+ * session files exist, a built-in CrystallineLattice (glacier)
  * default is offered. On successful auth, launches the chosen session as
  * the target user.
  */

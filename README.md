@@ -8,7 +8,7 @@ Snowfall is a framebuffer login manager that renders directly to
 DRM/KMS (no X11, no Wayland compositor required). It authenticates
 users via PAM, then execs the selected session as the authenticated
 user. When no session files are installed, snowfall falls back to a
-built-in default — on YetiOS, CrystallineLattice (`glacier-phase0`).
+built-in default — on YetiOS, CrystallineLattice (`glacier`).
 
 ```
 snowfall (DRM master)
@@ -69,7 +69,7 @@ Type=Application
 ```
 
 If the directory is empty or absent, snowfall offers a built-in default
-session that launches **CrystallineLattice** (`glacier-phase0`), YetiOS's
+session that launches **CrystallineLattice** (`glacier`), YetiOS's
 from-scratch DRM/KMS layer. Override it by dropping a `.desktop` file here,
 or change `SF_DEFAULT_EXEC` in [`src/session.c`](src/session.c).
 

@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <linux/vt.h>
+#include <sys/ioctl.h>
 
 #include <libinput.h>
 #include <libudev.h>
@@ -83,11 +85,26 @@ static void handle_key_event(sf_input_t *inp,
 
     xkb_keysym_t sym = xkb_state_key_get_one_sym(inp->xkb_state, kc);
 
+    /* --- Intercept VT Switching (Ctrl + Alt + F1-F12) --- */
+    bool ctrl = xkb_state_mod_name_is_active(inp->xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE);
+    bool alt  = xkb_state_mod_name_is_active(inp->xkb_state, XKB_MOD_NAME_ALT,  XKB_STATE_MODS_EFFECTIVE);
+
+    if (ctrl && alt && sym >= XKB_KEY_F1 && sym <= XKB_KEY_F12) {
+        int vt = sym - XKB_KEY_F1 + 1;
+        int fd = open("/dev/tty0", O_RDWR | O_CLOEXEC);
+        if (fd >= 0) {
+            ioctl(fd, VT_ACTIVATE, vt);
+            close(fd);
+        }
+        return; /* Event consumed, do not pass to UI */
+    }
+    /* ---------------------------------------------------- */
+
     sf_key_event_t ev = { .action = SF_KEY_NONE, .ch = 0 };
 
     switch (sym) {
-    case XKB_KEY_Return:    ev.action = SF_KEY_ENTER;     break;
-    case XKB_KEY_KP_Enter:  ev.action = SF_KEY_ENTER;     break;
+    case XKB_KEY_Return:    ev.action = SF_KEY_ENTER;      break;
+    case XKB_KEY_KP_Enter:  ev.action = SF_KEY_ENTER;      break;
     case XKB_KEY_BackSpace: ev.action = SF_KEY_BACKSPACE;  break;
     case XKB_KEY_Tab:       ev.action = SF_KEY_TAB;        break;
     case XKB_KEY_ISO_Left_Tab: ev.action = SF_KEY_TAB;     break;

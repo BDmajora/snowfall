@@ -17,12 +17,12 @@
 #define SESSIONS_DIR "/usr/share/wayland-sessions"
 
 /* Built-in default session. YetiOS hands off from snowfall to
- * CrystallineLattice (binary: glacier-phase0), a from-scratch DRM/KMS
+ * CrystallineLattice (binary: glacier), a from-scratch DRM/KMS
  * platform layer — not a Wayland compositor. Offered when no .desktop
  * session files are installed. Change SF_DEFAULT_EXEC to launch a different
- * compositor or a different glacier-phase0 subcommand. */
+ * compositor or a different glacier subcommand. */
 #define SF_DEFAULT_NAME "CrystallineLattice"
-#define SF_DEFAULT_EXEC "glacier-phase0 gl"
+#define SF_DEFAULT_EXEC "glacier wm"
 
 /* ------------------------------------------------------------------ */
 /* Desktop file parsing                                               */

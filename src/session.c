@@ -5,6 +5,7 @@
 #include "sf_session.h"
 
 #include <dirent.h>
+#include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -169,6 +170,21 @@ int sf_session_launch(const sf_session_entry_t *session,
     /* cd to home. */
     if (chdir(auth->home) < 0)
         chdir("/");
+
+    /* Capture the session's stdout/stderr to a log in the user's home.
+     * snowfall has already dropped DRM master and closed the console, so
+     * without this the session's output (e.g. a compositor's startup errors)
+     * goes nowhere and failures are invisible. Best-effort: if the open
+     * fails we still exec, just without a log. */
+    char logpath[512];
+    snprintf(logpath, sizeof(logpath), "%s/.snowfall-session.log", auth->home);
+    int logfd = open(logpath, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (logfd >= 0) {
+        dup2(logfd, STDOUT_FILENO);
+        dup2(logfd, STDERR_FILENO);
+        if (logfd > STDERR_FILENO)
+            close(logfd);
+    }
 
     /* exec the session command via shell so it can be "sway -c ..." */
     execl("/bin/sh", "/bin/sh", "-c", session->exec, (char *)NULL);

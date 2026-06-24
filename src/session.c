@@ -16,6 +16,14 @@
 
 #define SESSIONS_DIR "/usr/share/wayland-sessions"
 
+/* Built-in default session. YetiOS hands off from snowfall to
+ * CrystallineLattice (binary: glacier-phase0), a from-scratch DRM/KMS
+ * platform layer — not a Wayland compositor. Offered when no .desktop
+ * session files are installed. Change SF_DEFAULT_EXEC to launch a different
+ * compositor or a different glacier-phase0 subcommand. */
+#define SF_DEFAULT_NAME "CrystallineLattice"
+#define SF_DEFAULT_EXEC "glacier-phase0 gl"
+
 /* ------------------------------------------------------------------ */
 /* Desktop file parsing                                               */
 /* ------------------------------------------------------------------ */
@@ -74,26 +82,34 @@ int sf_session_discover(sf_session_list_t *list) {
     memset(list, 0, sizeof(*list));
 
     DIR *dir = opendir(SESSIONS_DIR);
-    if (!dir) return 0; /* no sessions dir is not an error */
+    if (dir) {
+        struct dirent *ent;
+        while ((ent = readdir(dir)) != NULL) {
+            if (list->count >= SF_MAX_SESSIONS) break;
 
-    struct dirent *ent;
-    while ((ent = readdir(dir)) != NULL) {
-        if (list->count >= SF_MAX_SESSIONS) break;
+            /* Only .desktop files. */
+            const char *dot = strrchr(ent->d_name, '.');
+            if (!dot || strcmp(dot, ".desktop") != 0) continue;
 
-        /* Only .desktop files. */
-        const char *dot = strrchr(ent->d_name, '.');
-        if (!dot || strcmp(dot, ".desktop") != 0) continue;
+            char path[512];
+            snprintf(path, sizeof(path), "%s/%s", SESSIONS_DIR, ent->d_name);
 
-        char path[512];
-        snprintf(path, sizeof(path), "%s/%s", SESSIONS_DIR, ent->d_name);
-
-        sf_session_entry_t entry;
-        if (parse_desktop_file(path, &entry) == 0) {
-            list->entries[list->count++] = entry;
+            sf_session_entry_t entry;
+            if (parse_desktop_file(path, &entry) == 0) {
+                list->entries[list->count++] = entry;
+            }
         }
+        closedir(dir);
     }
 
-    closedir(dir);
+    /* No installed session files → fall back to the built-in default so
+     * YetiOS always has CrystallineLattice to hand off to. */
+    if (list->count == 0) {
+        sf_session_entry_t *e = &list->entries[list->count++];
+        snprintf(e->name, sizeof(e->name), "%s", SF_DEFAULT_NAME);
+        snprintf(e->exec, sizeof(e->exec), "%s", SF_DEFAULT_EXEC);
+    }
+
     return 0;
 }
 

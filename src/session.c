@@ -167,6 +167,20 @@ int sf_session_launch(const sf_session_entry_t *session,
     /* XDG_SESSION_TYPE for Wayland compositors. */
     setenv("XDG_SESSION_TYPE", "wayland", 1);
 
+    /* Force libseat's seatd backend. glacier uses libseat to acquire the
+     * seat (GPU + input); without a seat manager it dies at startup with
+     * "libseat_open_seat: No such file or directory". YetiOS has no
+     * logind/elogind, so left to auto-detect libseat would try the logind
+     * backend first, fail, and only then fall back to seatd — pinning the
+     * backend skips that wasted probe and makes the path deterministic.
+     *
+     * The seatd daemon itself is a system service started by OpenRC
+     * (snowfall.openrc 'need's seatd). For libseat to connect to
+     * /run/seatd.sock the login user must be in the 'seat' group; that
+     * membership is picked up automatically by the initgroups() call above.
+     * Remove this line if a logind provider is ever adopted. */
+    setenv("LIBSEAT_BACKEND", "seatd", 1);
+
     /* cd to home. */
     if (chdir(auth->home) < 0)
         chdir("/");

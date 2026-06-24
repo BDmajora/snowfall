@@ -10,7 +10,10 @@ output_log="/var/log/snowfall.log"
 error_log="/var/log/snowfall.log"
 
 depend() {
-    need udev
+    # seatd: glacier (and any Wayland compositor) acquires the GPU/input
+    # seat through libseat, which needs the seatd daemon running. 'need'
+    # pulls seatd up before snowfall starts, so the session never races it.
+    need udev seatd
     after snowcone
     before local
 }

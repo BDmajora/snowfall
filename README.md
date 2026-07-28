@@ -116,4 +116,4 @@ or change `SF_DEFAULT_EXEC` in [`src/session.c`](src/session.c).
 
 ## License
 
-GNU GPL v3.0 — YetiOS Project
+MIT License - YetiOS Project

@@ -230,5 +230,5 @@ void sf_draw_copyright(cairo_t *cr, const sf_layout_t *l) {
     cairo_set_font_size(cr, l->font_sm * 0.85);
     cairo_set_source_rgba(cr, WHITE_R, WHITE_G, WHITE_B, 0.3);
     cairo_move_to(cr, 20.0 * l->scale, l->h - 30.0 * l->scale);
-    cairo_show_text(cr, "YetiOS Project  —  GNU GPL v3.0");
+    cairo_show_text(cr, "YetiOS Project - MIT License");
 }
